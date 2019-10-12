@@ -50,12 +50,12 @@ k = [0, 3, 21, 39]
 
 x = 0.01
 # empty list for filling prob values
-p = []
+theta = []
 
 # for loop to create list of values of p (99 values; 98 sub-intervals)
 
 for i in range(99):
-    p.append(x*(i+1))
+    theta.append(x*(i+1))
 
 # Compute Likelihood
 # empty list for filling posterior values
@@ -63,8 +63,8 @@ post = []
 
 for i in range(len(n)):
     post.append([])
-    for j in range(len(p)):
-        post[i].append(0.5*(fact(n[i])*p[j]**k[i]*(1-p[j])**(n[i]-k[i]))/float(fact(n[i]-k[i])))
+    for j in range(len(theta)):
+        post[i].append(0.5*(fact(n[i])*theta[j]**k[i]*(1-theta[j])**(n[i]-k[i]))/float(fact(n[i]-k[i])))
 
 # convert list object as numpy array
 post = np.asarray(post)
@@ -73,13 +73,13 @@ post = np.asarray(post)
 
 fig, axs = plt.subplots(2, 2)
 fig.suptitle('Posterior')
-axs[0, 0].plot(p, post[0], 'r-o')
-axs[0, 1].plot(p, post[1], 'g-o')
-axs[1, 0].plot(p, post[2], 'b-o')
-axs[1, 1].plot(p, post[3], 'k-o')
+axs[0, 0].plot(theta, post[0], 'r-o')
+axs[0, 1].plot(theta, post[1], 'g-o')
+axs[1, 0].plot(theta, post[2], 'b-o')
+axs[1, 1].plot(theta, post[3], 'k-o')
 
 for ax in axs.flat:
     ax.set(xlabel=r'$\theta$', ylabel=r'p($\theta$|D)')
 
-
+plt.savefig(r'Posterior vs theta')
 plt.show()
