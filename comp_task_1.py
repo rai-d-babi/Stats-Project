@@ -23,6 +23,7 @@ elif sys_os == windows:
 else:
     print('Mac machine')
 
+print('Current working directory: '+os.getcwd())
 ################################################################
 # Let the experiment be tossing a coin to analsye the fairness
 #  of the coin with p := probability that the result is heads
@@ -133,6 +134,5 @@ axs1[1, 1].plot(theta, post_n[3], 'k-o')
 for ax in axs1.flat:
     ax.set(xlabel=r'$\theta$', ylabel=r'Normalised Density p($\theta$|D)/c')
 
-print(post[3], post_n[3])
 plt.savefig(r'Normalised Posterior vs theta')
 plt.show()
