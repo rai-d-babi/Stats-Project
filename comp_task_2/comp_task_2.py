@@ -28,7 +28,7 @@ print('Current working directory: '+os.getcwd())
 ##########################################################################################################
 # Let the experiment be tossing a coin to analsye the fairness of the coin with p := probability that the 
 # result is heads in a given toss of the coin. The coin is tossed n times and let k be the number of times 
-# the coin is facing heads. Therefore, the random variale of the experiment follow a Binomial distribution.
+# the coin is facing heads. Therefore, the random variale X of the experiment follow a Binomial distribution.
 # Goal: Find posterior probability of unknown from the given information/ data.
 
 # We need to compute likelihood (numerator) times prior while ignoring the constant term. Assume the prior
@@ -36,6 +36,10 @@ print('Current working directory: '+os.getcwd())
 # of the given data which is is very hard to compute therfore this will be ignored.
 ##########################################################################################################
 
+# define likelihood of theta given data/ conditional probabilty of data given theta
+def likelihood(n,k,theta):
+    return fact(n)/float(fact(n-k))*(theta)**k * (1-theta)**(n-k)
+    
 # define normal density without the coefficient 1/square(2pi)*sigma
 def exp_gauss(theta,var):
     return np.exp(-(theta-0.5)**2/(2*var**2))
@@ -69,7 +73,7 @@ for i in range(len(var)):
     for j in range(len(n)):
         post[i].append([])
         for m in range(len(theta)):
-            post[i][j].append(0.5*(fact(n[j])*theta[m]**k[j]*(1-theta[m])**(n[j]-k[j]))/(float(fact(n[j]-k[j]))*exp_gauss(theta[m],var[i])))
+            post[i][j].append(0.5*likelihood(n[j], k[j], theta[m])*exp_gauss(theta[m],var[i]))
 
 # convert list object as numpy array
 post = np.asarray(post)
@@ -105,7 +109,8 @@ axs0[1, 1].plot(theta, post[0,3,:], 'k-o')
 
 # label x and y axis                              
 for ax in axs0.flat:
-    ax.set(xlabel=r'$\theta$', ylabel=r'Density p($\theta$|D)')
+    ax.set(xlabel=r'$\theta$', ylabel=r'Density $\pi(\theta|X = k)$')
+
 
 plt.savefig(r'Posterior vs theta 0')
 
@@ -133,7 +138,7 @@ axs1[1, 1].plot(theta, post[1,3,:], 'k-o')
 
 # label x and y axis                              
 for ax in axs1.flat:
-    ax.set(xlabel=r'$\theta$', ylabel=r'Density p($\theta$|D)')
+    ax.set(xlabel=r'$\theta$', ylabel=r'Density $\pi(\theta|X = k)$')
 
 plt.savefig(r'Posterior vs theta 1')                              
                               
@@ -162,7 +167,7 @@ axs2[1, 1].plot(theta, post[2,3,:], 'k-o')
 
 # label x and y axis                              
 for ax in axs2.flat:
-    ax.set(xlabel=r'$\theta$', ylabel=r'Density p($\theta$|D)')
+    ax.set(xlabel=r'$\theta$', ylabel=r'Density $\pi(\theta|X = k)$')
 
 plt.savefig(r'Posterior vs theta 2')                              
                               
