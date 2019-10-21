@@ -38,7 +38,7 @@ print('Current working directory: '+os.getcwd())
 
 # define likelihood of theta given data/ conditional probabilty of data given theta
 def likelihood(n,k,theta):
-    return fact(n)/float(fact(n-k))*(theta)**k * (1-theta)**(n-k)
+    return (fact(n)*(theta)**k * (1-theta)**(n-k))/float(fact(n-k))
     
 # define normal density without the coefficient 1/square(2pi)*sigma
 def exp_gauss(theta,var):
@@ -109,7 +109,7 @@ axs0[1, 1].plot(theta, post[0,3,:], 'k-o')
 
 # label x and y axis                              
 for ax in axs0.flat:
-    ax.set(xlabel=r'$\theta$', ylabel=r'Density $\pi(\theta|X = k)$')
+    ax.set(xlabel=r'$\theta$', ylabel=r'$\pi(\theta|X = k)$')
 
 
 plt.savefig(r'Posterior vs theta 0')
@@ -138,7 +138,7 @@ axs1[1, 1].plot(theta, post[1,3,:], 'k-o')
 
 # label x and y axis                              
 for ax in axs1.flat:
-    ax.set(xlabel=r'$\theta$', ylabel=r'Density $\pi(\theta|X = k)$')
+    ax.set(xlabel=r'$\theta$', ylabel=r'$\pi(\theta|X = k)$')
 
 plt.savefig(r'Posterior vs theta 1')                              
                               
@@ -167,7 +167,7 @@ axs2[1, 1].plot(theta, post[2,3,:], 'k-o')
 
 # label x and y axis                              
 for ax in axs2.flat:
-    ax.set(xlabel=r'$\theta$', ylabel=r'Density $\pi(\theta|X = k)$')
+    ax.set(xlabel=r'$\theta$', ylabel=r'$\pi(\theta|X = k)$')
 
 plt.savefig(r'Posterior vs theta 2')                              
                               
