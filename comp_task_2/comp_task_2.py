@@ -38,7 +38,7 @@ print('Current working directory: '+os.getcwd())
 
 # define likelihood of theta given data/ conditional probabilty of data given theta
 def likelihood(n,k,theta):
-    return (fact(n)*(theta)**k * (1-theta)**(n-k))/float(fact(n-k))
+    return (fact(n)/float(fact(k)*fact(n-k)))*(theta)**k * (1-theta)**(n-k)
     
 # define normal density without the coefficient 1/square(2pi)*sigma
 def exp_gauss(theta,var):
