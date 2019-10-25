@@ -3,6 +3,7 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 from math import factorial as fact
+from pylab import *
 ##########################################################################################################
 # Check the system operating system
 ##########################################################################################################
@@ -87,6 +88,39 @@ for i in range(len(var)):
         for m in range(len(theta)):
             post_1[i][j].append(0.5*likelihood(n[j], k[j], theta[m])*exp_gauss(theta[m],mu[0],var[i]))
 
+##########################################################################################################
+# normalising the posterior densities
+##########################################################################################################
+
+# container for sum of posterior densities of post_1
+sum_1 = []
+
+# container for normalised posterior densities
+norm_1 = []
+
+# calculating areas of each posterior densities
+for i in range(len(var)):
+    sum_1.append([])
+    for j in range(len(n)):
+        sum_temp = 0
+        for k in range(len(theta)):
+            sum_temp+=post_1[i][j][k]            
+        sum_1[i].append(sum_temp)
+
+# Normalising posterior densities
+for i in range(len(var)):
+    norm_1.append([])
+    for j in range(len(n)):
+        norm_1[i].append([])
+        for k in range(len(theta)):
+            norm_1[i][j].append(post_1[i][j][k]/sum_1[i][j])                
+
+# area of each normalised posteriors
+for i in range(len(var)):
+    for j in range(len(n)):
+        print(sum(norm_1[i][j]))       
+
+exit()
 
 #post_2
 # double nested 'for loop' inside a 'for loop' to compute posterior probabilities for n = 1,10,50,100 with k = 0,3,21
