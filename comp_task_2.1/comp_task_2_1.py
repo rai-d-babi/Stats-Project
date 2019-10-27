@@ -3,7 +3,7 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 from math import factorial as fact
-from pylab import *
+import pylab as pyl
 ##########################################################################################################
 # Check the system operating system
 ##########################################################################################################
@@ -25,6 +25,17 @@ else:
     print('Mac machine')
 
 print('Current working directory: '+os.getcwd())
+
+
+##########################################################################################################
+# Debugging info
+##########################################################################################################
+
+# 26/10/2019 --- changed the code to get 95% HDI credible regions 
+# 26/10/2019 --- increased the value of theta from 99 to 999 to get more data and get theta (low,high) for
+# multiple posteriors
+# 27/10/2019 --- finally realised that the maximum value of the posterior is less than the area under 
+# the posterior density times 0.05, need to fix this issue so I can get 95% HDI regions
 
 ##########################################################################################################
 # Change font size, ... 
@@ -57,13 +68,13 @@ n = [1, 10, 50, 100]
 k = [0, 3, 21, 39]
 
 # Initial value of theta/ step size
-dx = 0.01
+dx = 0.001
 
 # empty list for filling prob values
 theta = []
 
-# for loop to create list of values of theta (99 values; 98 sub-intervals)
-for i in range(99):
+# for loop to create list of values of theta (9999 values; 9998 sub-intervals)
+for i in range(999):
     theta.append(dx*(i+1))
 
 # List constaining values of variance of prior 
@@ -73,7 +84,8 @@ var = [1, 0.5, 0.1]
 mu = [0.7, 0.5, 0.3]
 
 # Compute Likelihood times prior
-# empty lists for filling posterior values; post_1 is the container for posterior with mean of 0.7 and varying variance
+# empty lists for filling posterior values
+# post_1 is the container for posterior with mean of 0.7 and varying variance
 # post_2 is the container for posterior with priors with mean of 0.5 and varying variance
 # post_3 is the container for posterior with priors with mean of 0.3 and varying variance
 post_1, post_2, post_3 = [], [], []
@@ -115,7 +127,7 @@ for i in range(len(var)):
 # calculating areas of each posterior densities
 ##########################################################################################################
 
-# container for sum of each posterior densities of post_1, post_! and post_3
+# container for sum of each posterior densities of post_1, post_2 and post_3
 area_1, area_2, area_3 = [], [], []
 
 # begin calculation
@@ -136,7 +148,7 @@ for l in range(3):
         for j in range(len(n)):
             sum_temp = 0
             for k in range(len(theta)):
-                sum_temp+=post_1[i][j][k]            
+                sum_temp+=post_tmp[i][j][k]            
             if l == 0:
                 area_1[i].append(sum_temp)
             elif l == 1:
@@ -144,37 +156,147 @@ for l in range(3):
             else:
                 area_3[i].append(sum_temp)
 
-# convert list objects as numpy array; extract area of posterior for n = 100 and multiply by 0.05
+print(area_1[:][1])
+#print(0.05*0.09647802222930729)
+#print(0.05*4.716448314241903)
+#print(0.05*4.083945376806198)
+
+##########################################################################################################
+
+# need to calculate area under denity using trapezoidal rule 
+##########################################################################################################
+
+
+##########################################################################################################
+# Calculate 95% HDI regions for n = 100
+##########################################################################################################
+
+
+# convert list objects as numpy array; extract area of posterior (post_1, post_2, post_3) for n = 100 and multiply by 0.05
+
 area_1, area_2, area_3 = np.asarray(area_1), np.asarray(area_2), np.asarray(area_3)
 hund_1, hund_2, hund_3 = 0.05*area_1[:,-1], 0.05*area_2[:,-1], 0.05*area_3[:,-1]
-print(hund_1)
-print(post_1[0][-1])
+		
+
+
+
+print(pyl.shape(post_1[:][-1]))
+
 ## convert back to list: area_1.tolist()
+post_tmp_0 = np.asarray(0.05*post_1[0,-1,:]/hund_1[0])
+
 hund = hund_1[0]
-count = 0
+#print(np.sum(0.05*post_tmp_0[1,-1,:]/hund_1[1]))
 
-for i in range(len(theta)+1):
-    while i < 99:
-        if post_1[0][-1][i]> hund-0.02 and post_1[0][-1][i] < hund+0.02:
-            low = post_1[0][-1][i]
-            lowIndex = i
-            print(i)
-        else:
-            break
+trial = np.argmax(post_tmp_0[0,-1,:])
+for i in range(trial):
+	print(post_1[0][-1][i],hund-hund*0.3)
+	if post_1[0][-1][i] > hund-0.1 and post_1[0][-1][i] < hund+0.5:
+		lowPost = post_1[0][-1][i]
+		low = theta[i]
+		break
+	else:		
+		continue
+print(hund)
+print(np.amax(post_tmp_0[0,-1,:]))
+print(hund_1)
+print(low, lowPost)
 
-        
-    while i < 99:
-        if post_1[0][-1][i]> hund-0.02 and post_1[0][-1][i] < hund+0.02:
-            high = post_1[0][-1][i]
-            highIndex = i
-            break
-
-            
-
-print(low,high,lowIndex, highIndex)
-print(post_1[0][-1][98])
 exit()
 
+# container for filling 95% HDI regions for n = 100
+low, high = [], []
+
+# container for filling 95% HDI posterior values
+lowPost, highPost = [], []
+
+for l in range(1):
+	low.append([])
+	lowPost.append([])
+	if l == 0:
+		hund = hund_1
+		post_tmp = np.asarray(post_1)
+		post_tmp = post_tmp[:,-1,:]
+		post_tmp.tolist() 
+	elif l == 1:
+		hund = hund_2
+		post_tmp = np.asarray(post_2)
+		post_tmp = post_tmp[:,-1,:]
+		post_tmp.tolist() 
+	else:
+		hund = hund_3
+		post_tmp = np.asarray(post_3)
+		post_tmp = post_tmp[:,-1,:]
+		post_tmp.tolist() 
+	for i in range(3):
+		maxIndex = np.argmax(post_tmp[i])
+		for j in range(maxIndex):
+			if post_tmp[i][j] > hund[i]-hund[i]*0.2 and post_tmp[i][j] < hund[i]+hund[i]*0.2:  
+				lowPost[l].append(post_tmp[i][j])
+				low[l].append(theta[j])
+				break
+			else:
+				continue
+print(lowPost, low)
+print(pyl.shape(lowPost), pyl.shape(low))
+print(hund_1)
+exit()
+
+
+
+post_tmp = np.asarray(post_tmp)
+print(np.array_equal(post_tmp[0],post_tmp_0[0][-1]))
+print(np.shape(post_tmp[0]), np.shape(post_tmp_0[0][-1]))
+
+for l in range(3):
+	low.append([])
+	high.append([])
+	lowPost.append([])
+	highPost.append([])
+	if l == 0:
+		hund = hund_1
+		post_tmp = np.asarray(post_1)
+		post_tmp = post_tmp[:,-1,:]
+		post_tmp.tolist()            
+
+	elif l == 1:
+		hund = hund_2
+		post_tmp = []
+		for tmp in range(len(post_2)):
+			post_tmp.append(post_2[tmp][-1])
+	else:
+		hund = hund_3
+		post_tmp = []
+		for tmp in range(len(post_3)):
+			post_tmp.append(post_2[tmp][-1])
+	for j in range(3):
+		tmp_post = np.asarray(post_tmp)
+		maxIndex = np.argmax(tmp_post[j])
+		print(maxIndex)
+		print(hund[j])
+		for i in range(maxIndex):
+			print(post_tmp[j][i],hund[j]-hund[j]*0.5)
+			if post_tmp[j][i]> hund[j]-hund[j]*0.5 and post_tmp[j][i] < hund[j]+hund[j]*0.5:
+				lowPost[l].append(post_tmp[j][i])
+				low.append[l](theta[i])
+				break
+			else:
+				continue
+                
+		for i in range(maxIndex+1,999,1):
+            
+			if post_tmp[j][i]> hund[j]-hund[j]*0.05 and post_tmp[j][i] < hund[j]+hund[j]*0.05:
+				highPost[l].append(post_tmp[j][i])
+				high[l].append(theta[i])
+				print(working)
+				break
+			else:
+				continue
+                
+print(hund_1,hund_2,hund_3)
+print(pyl.shape(post_tmp))
+print(high, highPost,low, lowPost)
+exit()
 
 # convert list objects as numpy array
 post_1 = np.asarray(post_1)
@@ -228,4 +350,4 @@ for i in range(3):
         for ax in axs.flat:
             ax.set(xlabel=r'$\theta$', ylabel=r'$\pi(\theta|X = k)$')
 
-        plt.show()     
+        plt.show()     	
