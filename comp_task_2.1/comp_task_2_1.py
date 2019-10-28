@@ -1,9 +1,12 @@
+# Import python packages and modules 
 import sys
 import os
 import numpy as np
 import matplotlib.pyplot as plt
 from math import factorial as fact
 import pylab as pyl
+from pandas import read_csv
+
 ##########################################################################################################
 # Check the system operating system
 ##########################################################################################################
@@ -31,7 +34,7 @@ print('Current working directory: '+os.getcwd())
 # Debugging info
 ##########################################################################################################
 
-# 26/10/2019 --- changed the code to get 95% HDI credible regions 
+# 26/10/2019 --- changed the code to get 95% HPD credible regions 
 # 26/10/2019 --- increased the value of theta from 99 to 999 to get more data and get theta (low,high) for
 # multiple posteriors
 # 27/10/2019 --- finally realised that the maximum value of the posterior is less than the area under 
@@ -74,13 +77,13 @@ n = [1, 10, 50, 100]
 k = [0, 3, 21, 39]
 
 # Initial value of theta/ step size
-dx = 0.001
+dx = 0.01
 
 # empty list for filling prob values
 theta = []
 
 # for loop to create list of values of theta (9999 values; 9998 sub-intervals)
-for i in range(999):
+for i in range(99):
     theta.append(dx*(i+1))
 
 # List constaining values of variance of prior 
@@ -172,7 +175,7 @@ for l in range(3):
                 area_3[i].append(dx*sum_temp)
 
 ##########################################################################################################
-# Calculate 95% HDI regions for n = 100
+# Calculate 95% HPD credible regions for n = 100
 ##########################################################################################################
 
 ##############################################################################################################
@@ -188,10 +191,10 @@ for l in range(3):
 area_1, area_2, area_3 = np.asarray(area_1), np.asarray(area_2), np.asarray(area_3)
 hund_1, hund_2, hund_3 = 0.05*area_1[:,-1], 0.05*area_2[:,-1], 0.05*area_3[:,-1]
 		
-# initiialise a container for filling 95% HDI regions for n = 100
+# initiialise a container for filling 95% HPD regions for n = 100
 low, high = [], []
 
-# initiialise a container for filling 95% HDI posterior values
+# initiialise a container for filling 95% HPD posterior values
 lowPost, highPost = [], []
 
 # Start algorithm
@@ -227,7 +230,7 @@ for l in range(3):
 			else:
 				continue
                 
-		for i in range(maxIndex+1,999,1):
+		for i in range(maxIndex+1,99,1):
             
 			if post_tmp[j][i]> hund[j]-hund[j]*0.05 and post_tmp[j][i] < hund[j]+hund[j]*0.05:
 				highPost[l].append(post_tmp[j][i])
@@ -236,10 +239,45 @@ for l in range(3):
 			else:
 				continue
                 
-print(high, highPost,low, lowPost)
+
+##########################################################################################################
+# Export data
+##########################################################################################################
+
+# procedure to get corresponding mean and variance values for the table
+mu_stack = []
+var_stack = []
+for i in range(3):
+    x = [mu[i]]*3
+    y = [var[i]]*3
+    mu_stack.extend(x)
+    var_stack.extend(y)
+
+# convert relevant data to numpy objects
+
+low_stack, high_stack = np.asarray(low), np.asarray(high)
+mu_stack, var_stack = np.asarray(mu_stack), np.asarray(var_stack)
 exit()
+# Stack low, high, mu_stack and var_stack as column vectors
+data = np.vstack((mu_stack, var_stack, low_stack, high_stack))
+
+# transpose stacked data
+data = data.T
+
+# save data as a csv file
+np.savetxt('HPD_regions.csv', data, delimeter = ',')
+
+# Read csv file using pandas and remove the header
+df = read_csv('HPD_regions.csv', header=None)
+
+# Append headers to the columns
+df.columns(r'Prior mean $\mu$',r'Prior variance $\sigma^"$','theta_lo','theta_hi')
+
+# Save the data file as csv
+df.to_csv('HPD_regions.csv')
 
 
+exit()
 
 # convert list objects as numpy array
 post_1 = np.asarray(post_1)
@@ -251,10 +289,11 @@ post_3 = np.asarray(post_3)
 ##########################################################################################################
 
 # strings that are labels                           
-n_k_str = ['n = 1, k = 0, ', 'n = 10, k = 3', 'n = 50, k = 21 ', 'n = 100, k =39 ']
-mu_var_str_1 = [r'$\mu = 0.7, \sigma^2 = 1$', r'$\mu = 0.7, \sigma^2 = 0.5$', r'$\mu = 0.7, \sigma^2 = 0.1$']                              
-mu_var_str_2 = [r'$\mu = 0.5, \sigma^2 = 1$', r'$\mu = 0.5, \sigma^2 = 0.5$', r'$\mu = 0.5, \sigma^2 = 0.1$']                              
-mu_var_str_3 = [r'$\mu = 0.3, \sigma^2 = 1$', r'$\mu = 0.3, \sigma^2 = 0.5$', r'$\mu = 0.3, \sigma^2 = 0.1$']                              
+n_k_str = ['n = 1, k = 0, ', 'n = 10, k = 3', 'n = 50, k = 21 ', 'n = 100, k = 39 ']
+
+mu_str_1 = [r'$\mu = 0.7, \sigma^2 = 1$', r'$\mu = 0.7, \sigma^2 = 0.5$', r'$\mu = 0.7, \sigma^2 = 0.1$']                              
+mu_str_2 = [r'$\mu = 0.5, \sigma^2 = 1$', r'$\mu = 0.5, \sigma^2 = 0.5$', r'$\mu = 0.5, \sigma^2 = 0.1$']                              
+mu_str_3 = [r'$\mu = 0.3, \sigma^2 = 1$', r'$\mu = 0.3, \sigma^2 = 0.5$', r'$\mu = 0.3, \sigma^2 = 0.1$']                              
 
 for i in range(3):
     if i==0:
@@ -293,4 +332,59 @@ for i in range(3):
         for ax in axs.flat:
             ax.set(xlabel=r'$\theta$', ylabel=r'$\pi(\theta|X = k)$')
 
-        plt.show()     	
+
+##########################################################################################################                         
+# Plotting figures (Prior mean values superimposed) (3 subplots, each with 4 panels)
+##########################################################################################################
+
+# Strings that are labels and legends of the plots
+var_str = [r'$\sigma^2 = 1$', r'$\sigma^2 = 0.5$', r'$\sigma^2 = 0.1$'] 
+mu_var_str_1 = [r'$\mu = 0.7$', r'$\mu = 0.7$', r'$\mu = 0.7$']                              
+mu_var_str_2 = [r'$\mu = 0.5$', r'$\mu = 0.5$', r'$\mu = 0.5$']                              
+mu_var_str_3 = [r'$\mu = 0.3$', r'$\mu = 0.3$', r'$\mu = 0.3$']
+
+# string that contains marker for posterior densities      
+dens_marker = ['r-o', 'g*-', 'bs-' ]
+
+for i in range(3):
+    if i==0:
+        post = post_1
+        mu_var_str = mu_var_str_1
+    elif i==1:
+        post = post_2
+        mu_var_str = mu_var_str_2
+    else:
+        post = post_3
+        mu_var_str = mu_var_str_3
+
+    # Sub-plots of posterior of different experiments where the prior is N(mu,var)
+    # each panel contains three density curves with fixed prior mean and different prior variance
+    fig, axs = plt.subplots(2, 2)
+    fig.suptitle('Posterior')  
+
+    # labels of top panels
+    for k in range(2):
+        axs[0,k].text(0.735,0.6,n_k_str[k], transform = axs[0,k].transAxes)
+        axs[0,k].text(0.735,0.53,mu_var_str[j], transform = axs[0,k].transAxes)
+    
+    # plot top panels
+    for j in range(3):
+        axs[0,0].plot(theta, post[j,0,:], dens_marker[j], label = var_str[j])
+        axs[0,1].plot(theta, post[j,1,:], dens_marker[j], label = var_str[j])
+    axs[0,0].legend(loc = 'best')
+    axs[0,1].legend(loc = 'best')
+    # plot bottom panels
+    for j in range(3):
+        axs[1, 0].plot(theta, post[j,2,:], dens_marker[j], label = var_str[j])
+        axs[1, 1].plot(theta, post[j,3,:], dens_marker[j], label = var_str[j])
+    axs[1,0].legend(loc = 'best')
+    axs[1,1].legend(loc = 'best')
+    # labels of bottom panels
+    for k in range(2):
+        axs[1,k].text(0.735, 0.6, n_k_str[2+k], transform = axs[1,k].transAxes)
+        axs[1,k].text(0.735, 0.53,mu_var_str[j], transform = axs[1,k].transAxes)
+
+    # label x and y axis                              
+    for ax in axs.flat:
+        ax.set(xlabel=r'$\theta$', ylabel=r'$\pi(\theta|X = k)$')
+    plt.show()
