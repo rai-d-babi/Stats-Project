@@ -77,13 +77,13 @@ n = [1, 10, 50, 100]
 k = [0, 3, 21, 39]
 
 # Initial value of theta/ step size
-dx = 0.01
+dx = 0.001
 
 # empty list for filling prob values
 theta = []
 
 # for loop to create list of values of theta (9999 values; 9998 sub-intervals)
-for i in range(99):
+for i in range(999):
     theta.append(dx*(i+1))
 
 # List constaining values of variance of prior 
@@ -230,7 +230,7 @@ for l in range(3):
 			else:
 				continue
                 
-		for i in range(maxIndex+1,99,1):
+		for i in range(maxIndex+1,999,1):
             
 			if post_tmp[j][i]> hund[j]-hund[j]*0.05 and post_tmp[j][i] < hund[j]+hund[j]*0.05:
 				highPost[l].append(post_tmp[j][i])
@@ -238,7 +238,7 @@ for l in range(3):
 				break
 			else:
 				continue
-                
+
 
 ##########################################################################################################
 # Export data
@@ -275,10 +275,6 @@ df.columns(r'Prior mean $\mu$',r'Prior variance $\sigma^"$','theta_lo','theta_hi
 
 # Save the data file as csv
 df.to_csv('HPD_regions.csv')
-
-
-exit()
-
 # convert list objects as numpy array
 post_1 = np.asarray(post_1)
 post_2 = np.asarray(post_2)
@@ -288,12 +284,11 @@ post_3 = np.asarray(post_3)
 # Plotting figures (9 subplots, each with 4 panels)
 ##########################################################################################################
 
-# strings that are labels                           
-n_k_str = ['n = 1, k = 0, ', 'n = 10, k = 3', 'n = 50, k = 21 ', 'n = 100, k = 39 ']
-
-mu_str_1 = [r'$\mu = 0.7, \sigma^2 = 1$', r'$\mu = 0.7, \sigma^2 = 0.5$', r'$\mu = 0.7, \sigma^2 = 0.1$']                              
-mu_str_2 = [r'$\mu = 0.5, \sigma^2 = 1$', r'$\mu = 0.5, \sigma^2 = 0.5$', r'$\mu = 0.5, \sigma^2 = 0.1$']                              
-mu_str_3 = [r'$\mu = 0.3, \sigma^2 = 1$', r'$\mu = 0.3, \sigma^2 = 0.5$', r'$\mu = 0.3, \sigma^2 = 0.1$']                              
+# strings that are labels
+n_k_str = ['n = 1, k = 0, ', 'n = 10, k = 3', 'n = 50, k = 21 ', 'n = 100, k = 39 ']                           
+mu_var_str_1 = [r'$\mu = 0.7, \sigma^2 = 1$', r'$\mu = 0.7, \sigma^2 = 0.5$', r'$\mu = 0.7, \sigma^2 = 0.1$']                              
+mu_var_str_2 = [r'$\mu = 0.5, \sigma^2 = 1$', r'$\mu = 0.5, \sigma^2 = 0.5$', r'$\mu = 0.5, \sigma^2 = 0.1$']                              
+mu_var_str_3 = [r'$\mu = 0.3, \sigma^2 = 1$', r'$\mu = 0.3, \sigma^2 = 0.5$', r'$\mu = 0.3, \sigma^2 = 0.1$']                              
 
 for i in range(3):
     if i==0:
@@ -331,7 +326,8 @@ for i in range(3):
         # label x and y axis                              
         for ax in axs.flat:
             ax.set(xlabel=r'$\theta$', ylabel=r'$\pi(\theta|X = k)$')
-
+        plt.show()
+exit()
 
 ##########################################################################################################                         
 # Plotting figures (Prior mean values superimposed) (3 subplots, each with 4 panels)
@@ -339,9 +335,9 @@ for i in range(3):
 
 # Strings that are labels and legends of the plots
 var_str = [r'$\sigma^2 = 1$', r'$\sigma^2 = 0.5$', r'$\sigma^2 = 0.1$'] 
-mu_var_str_1 = [r'$\mu = 0.7$', r'$\mu = 0.7$', r'$\mu = 0.7$']                              
-mu_var_str_2 = [r'$\mu = 0.5$', r'$\mu = 0.5$', r'$\mu = 0.5$']                              
-mu_var_str_3 = [r'$\mu = 0.3$', r'$\mu = 0.3$', r'$\mu = 0.3$']
+mu__str_1 = [r'$\mu = 0.7$', r'$\mu = 0.7$', r'$\mu = 0.7$']                              
+mu_str_2 = [r'$\mu = 0.5$', r'$\mu = 0.5$', r'$\mu = 0.5$']                              
+mu_str_3 = [r'$\mu = 0.3$', r'$\mu = 0.3$', r'$\mu = 0.3$']
 
 # string that contains marker for posterior densities      
 dens_marker = ['r-o', 'g*-', 'bs-' ]
@@ -349,13 +345,13 @@ dens_marker = ['r-o', 'g*-', 'bs-' ]
 for i in range(3):
     if i==0:
         post = post_1
-        mu_var_str = mu_var_str_1
+        mu_str = mu_str_1
     elif i==1:
         post = post_2
-        mu_var_str = mu_var_str_2
+        mu_str = mu_str_2
     else:
         post = post_3
-        mu_var_str = mu_var_str_3
+        mu_str = mu_str_3
 
     # Sub-plots of posterior of different experiments where the prior is N(mu,var)
     # each panel contains three density curves with fixed prior mean and different prior variance
@@ -365,7 +361,7 @@ for i in range(3):
     # labels of top panels
     for k in range(2):
         axs[0,k].text(0.735,0.6,n_k_str[k], transform = axs[0,k].transAxes)
-        axs[0,k].text(0.735,0.53,mu_var_str[j], transform = axs[0,k].transAxes)
+        axs[0,k].text(0.735,0.53,mu_str[j], transform = axs[0,k].transAxes)
     
     # plot top panels
     for j in range(3):
@@ -382,9 +378,14 @@ for i in range(3):
     # labels of bottom panels
     for k in range(2):
         axs[1,k].text(0.735, 0.6, n_k_str[2+k], transform = axs[1,k].transAxes)
-        axs[1,k].text(0.735, 0.53,mu_var_str[j], transform = axs[1,k].transAxes)
+        axs[1,k].text(0.735, 0.53,mu_str[j], transform = axs[1,k].transAxes)
 
     # label x and y axis                              
     for ax in axs.flat:
         ax.set(xlabel=r'$\theta$', ylabel=r'$\pi(\theta|X = k)$')
     plt.show()
+
+
+
+
+
