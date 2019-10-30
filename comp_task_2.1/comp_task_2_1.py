@@ -77,13 +77,13 @@ n = [1, 10, 50, 100]
 k = [0, 3, 21, 39]
 
 # Initial value of theta/ step size
-dx = 0.001
+dx = 0.01
 
 # empty list for filling prob values
 theta = []
 
-# for loop to create list of values of theta (9999 values; 9998 sub-intervals)
-for i in range(999):
+# for loop to create list of values of theta (99 values; 98 sub-intervals)
+for i in range(99):
     theta.append(dx*(i+1))
 
 # List constaining values of variance of prior 
@@ -180,10 +180,10 @@ for l in range(3):
 
 ##############################################################################################################
 # Let the horizontal line that cuts through density be 0.05*A = y. This algorithm loops through each value to 
-# find posterior value that is bigger than y-0.05*y and less than y+0.05*y. The low theta and high theta values
-# are recorded when the optimal value is found. For low theta, it loop through the index 0 to maxIndex-1 and for 
+# find posterior value that is bigger than y. The low theta and high theta values
+# are recorded when the optimal value is found. For low theta, it loops through the index 0 to maxIndex-1 and for 
 # high theta, it loops through the index maxIndex+1 to n-1, where maxIndex corresponds to the index with the 
-# highest density value.
+# highest density value (i.e the modal value).
 ###############################################################################################################
 
 # convert list objects as numpy array; extract area of posterior (post_1, post_2, post_3) for n = 100 and 
@@ -223,16 +223,16 @@ for l in range(3):
 		tmp_post = np.asarray(post_tmp)
 		maxIndex = np.argmax(tmp_post[j])
 		for i in range(maxIndex):
-			if post_tmp[j][i]> hund[j]-hund[j]*0.05 and post_tmp[j][i] < hund[j]+hund[j]*0.05:
+			if post_tmp[j][i]> hund[j]:
 				lowPost[l].append(post_tmp[j][i])
 				low[l].append(theta[i])
 				break
 			else:
 				continue
                 
-		for i in range(maxIndex+1,999,1):
+		for i in range(maxIndex+1,99,1):
             
-			if post_tmp[j][i]> hund[j]-hund[j]*0.05 and post_tmp[j][i] < hund[j]+hund[j]*0.05:
+			if post_tmp[j][i]> hund[j]:
 				highPost[l].append(post_tmp[j][i])
 				high[l].append(theta[i])
 				break
@@ -241,23 +241,24 @@ for l in range(3):
 
 
 ##########################################################################################################
-# Export data
+# Export table data
 ##########################################################################################################
 
-# procedure to get corresponding mean and variance values for the table
+# procedure to get corresponding prior mean, variance, and 95% HPD credible regions for the table
 mu_stack = []
 var_stack = []
+low_stack, high_stack = [], [] 
 for i in range(3):
     x = [mu[i]]*3
-    y = [var[i]]*3
     mu_stack.extend(x)
-    var_stack.extend(y)
+    var_stack.extend(var)
+    low_stack.extend(low[i])
+    high_stack.extend(high[i])
 
 # convert relevant data to numpy objects
-
-low_stack, high_stack = np.asarray(low), np.asarray(high)
+low_stack, high_stack = np.asarray(low_stack), np.asarray(high_stack)
 mu_stack, var_stack = np.asarray(mu_stack), np.asarray(var_stack)
-exit()
+
 # Stack low, high, mu_stack and var_stack as column vectors
 data = np.vstack((mu_stack, var_stack, low_stack, high_stack))
 
@@ -265,13 +266,13 @@ data = np.vstack((mu_stack, var_stack, low_stack, high_stack))
 data = data.T
 
 # save data as a csv file
-np.savetxt('HPD_regions.csv', data, delimeter = ',')
+np.savetxt('HPD_regions.csv', data, delimiter = ',')
 
 # Read csv file using pandas and remove the header
 df = read_csv('HPD_regions.csv', header=None)
 
 # Append headers to the columns
-df.columns(r'Prior mean $\mu$',r'Prior variance $\sigma^"$','theta_lo','theta_hi')
+df.columns = ['Prior mean','Prior variance','theta_lo','theta_hi']
 
 # Save the data file as csv
 df.to_csv('HPD_regions.csv')
@@ -279,7 +280,7 @@ df.to_csv('HPD_regions.csv')
 post_1 = np.asarray(post_1)
 post_2 = np.asarray(post_2)
 post_3 = np.asarray(post_3)
-
+exit()
 ##########################################################################################################                         
 # Plotting figures (9 subplots, each with 4 panels)
 ##########################################################################################################
@@ -384,6 +385,7 @@ for i in range(3):
     for ax in axs.flat:
         ax.set(xlabel=r'$\theta$', ylabel=r'$\pi(\theta|X = k)$')
     plt.show()
+
 
 
 
